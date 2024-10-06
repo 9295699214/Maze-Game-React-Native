@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import { generateMaze, initializeAudio, playSound, checkForNoMoves } from './mazeFile'; // Assume these functions are defined in mazeFile
-import styles from './MazeGameStyles'; // Import your styles
+import { generateMaze, initializeAudio, playSound, checkForNoMoves } from './mazeFile';
+import styles from './MazeGameStyles'; // Import the styles
 
-const MazeGame = () => {
+const MazeGame = ({ navigation }) => {
     const width = 10; // Set the maze width
     const height = 10; // Set the maze height
     const [maze, setMaze] = useState([]);
@@ -13,14 +13,30 @@ const MazeGame = () => {
     const [visibleTraps, setVisibleTraps] = useState([]); // Track visible traps
     const [gameOver, setGameOver] = useState(false);
     const [won, setWon] = useState(false); // State to track if the player has won
+    const [timer, setTimer] = useState(30); // Countdown timer starting at 30 seconds
 
     useEffect(() => {
+        // Initialize audio resources
         const initAudio = async () => {
             await initializeAudio();
         };
         initAudio();
 
         resetGame(); // Call resetGame to initialize the game
+
+        const interval = setInterval(() => {
+            setTimer(prev => {
+                if (prev === 1) {
+                    clearInterval(interval);
+                    Alert.alert("Time's up!"); // Alert when time is up
+                    setGameOver(true); // End the game
+                    return 0; // Ensure timer stops at 0
+                }
+                return prev - 1; // Decrease timer by 1 second
+            });
+        }, 1000); // 1000 ms = 1 second
+
+        return () => clearInterval(interval); // Clear interval on component unmount
     }, []);
 
     const resetGame = () => {
@@ -31,6 +47,7 @@ const MazeGame = () => {
         setVisibleTraps([]);
         setGameOver(false);
         setWon(false); // Reset win state
+        setTimer(30); // Reset timer
     };
 
     const movePlayer = async (direction) => {
@@ -58,12 +75,12 @@ const MazeGame = () => {
 
         // Check for boundaries
         if (newX < 0 || newY < 0 || newX >= width || newY >= height) {
-            return; // Out of bounds
+            return; // No alert for boundary checks
         }
 
         // Check if the new position is a wall (1)
         if (maze[newY][newX] === 1) {
-            return; // Collided with a wall
+            return; // No alert for wall collisions
         }
 
         // Check if the new position is a trap (2)
@@ -81,8 +98,10 @@ const MazeGame = () => {
         // Check if the player has reached the goal
         if (newX === goalPosition.x && newY === goalPosition.y) {
             await playSound('success'); // Play success sound
-            setWon(true); // Update win state
             Alert.alert("You won!"); // Display winning message
+            setWon(true); // Update won state
+            setPlayerPosition(null); // Make the player disappear
+            setTimeout(() => navigation.navigate('Home'), 2000); // Redirect to Home after 2 seconds
             return; // Stop further movement
         }
 
@@ -97,6 +116,7 @@ const MazeGame = () => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Maze Game</Text>
+            <Text style={styles.timer}>Time Left: {timer} seconds</Text> {/* Timer Display */}
             <View style={styles.maze}>
                 {maze.map((row, rowIndex) => (
                     <View key={rowIndex} style={styles.row}>
@@ -104,9 +124,9 @@ const MazeGame = () => {
                             let cellStyle = styles.cell;
 
                             // Render player, goal, walls, traps, and empty space
-                            if (won && playerPosition && playerPosition.x === cellIndex && playerPosition.y === rowIndex) {
-                                return null; // Player is hidden when won
-                            } else if (playerPosition.x === cellIndex && playerPosition.y === rowIndex) {
+                            if (won && playerPosition === null) {
+                                return null; // Don't render the player if won
+                            } else if (playerPosition && playerPosition.x === cellIndex && playerPosition.y === rowIndex) {
                                 cellStyle = { ...cellStyle, backgroundColor: 'blue' }; // Player
                             } else if (cellIndex === goalPosition.x && rowIndex === goalPosition.y) {
                                 cellStyle = { ...cellStyle, backgroundColor: 'green' }; // Goal

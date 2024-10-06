@@ -1,28 +1,20 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import HomeScreen from './components/HomeScreen/HomeScreen';
-import GameScreen from './components/GameScreen/GameScreen';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import MazeGame from './mazegame'; // Import your MazeGame component
+import HomeScreen from './components/HomeScreen/HomeScreen'; // Create a simple HomeScreen component
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 const App = () => {
-  return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Game"
-          component={GameScreen}
-          options={{ headerShown: false }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
+    return (
+        <NavigationContainer>
+            <Stack.Navigator initialRouteName="Home">
+                <Stack.Screen name="Home" component={HomeScreen} />
+                <Stack.Screen name="MazeGame" component={MazeGame} />
+            </Stack.Navigator>
+        </NavigationContainer>
+    );
 };
 
 export default App;

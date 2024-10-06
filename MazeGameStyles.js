@@ -3,51 +3,55 @@ import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
         justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f0f0f0',
     },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 20, // Add some margin at the bottom of the title
+        marginBottom: 20,
     },
     maze: {
-        marginBottom: 20, // Space between the grid and buttons
+        display: 'flex',
+        flexDirection: 'column',
+        marginBottom: 20,
     },
     row: {
         flexDirection: 'row',
     },
     cell: {
-        width: 38, // Increase cell width
-        height: 38, // Increase cell height
+        width: 38,
+        height: 38,
         borderWidth: 1,
-        borderColor: 'gray',
+        borderColor: '#ccc',
+    },
+    controls: {
+        alignItems: 'center',
     },
     button: {
+        backgroundColor: '#007BFF',
         padding: 10,
-        backgroundColor: 'blue', // Change button color to blue
         margin: 5,
         borderRadius: 5,
-    },
-    upButton: {
-        padding: 8, // Decrease padding for the Up button
-        backgroundColor: 'blue', // Ensure the Up button is also blue
-        borderRadius: 5,
-        width: 80, // Set a fixed width for the Up button if needed
+        width: 80,
+        alignItems: 'center',
     },
     buttonText: {
+        color: '#fff',
         fontSize: 16,
-        color: 'white', // Ensure button text color is white for visibility
+        fontWeight: 'bold',
     },
     restartButton: {
-        padding: 10,
-        backgroundColor: 'orange', // Color of the restart button
-        margin: 5,
+        backgroundColor: '#28a745',
+        padding: 15,
         borderRadius: 5,
+        marginTop: 20, // Add some space above the restart button
     },
     restartButtonText: {
-        fontSize: 16,
-        color: 'white', // Text color for the restart button
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 });
 
