@@ -51,6 +51,7 @@ const MazeGame = ({ navigation }) => {
     };
 
     const movePlayer = async (direction) => {
+
         if (gameOver || won) return;
 
         let newX = playerPosition.x;
@@ -77,6 +78,17 @@ const MazeGame = ({ navigation }) => {
         if (newX < 0 || newY < 0 || newX >= width || newY >= height) {
             return; // No alert for boundary checks
         }
+        
+        const hasReachedGoal = newX === goalPosition.x && newY === goalPosition.y;
+        
+        if (hasReachedGoal) {
+            await playSound('win'); // Play success sound
+            Alert.alert("Congratulations!", "You have won the game!"); // Display winning message
+            setWon(true); // Update won state
+            setPlayerPosition({ x: -1, y: -1 }); // Move the player off-screen
+            setTimeout(() => navigation.navigate('Home'), 2000); // Redirect to Home after 2 seconds
+            return; // Stop further movement
+        }
 
         // Check if the new position is a wall (1)
         if (maze[newY][newX] === 1) {
@@ -86,28 +98,29 @@ const MazeGame = ({ navigation }) => {
         // Check if the new position is a trap (2)
         if (maze[newY][newX] === 2) {
             await playSound('trap'); // Play trap sound
-            Alert.alert("You hit a trap!");
+            Alert.alert(
+                "Hit a trap and you lost. Try again.",
+                "",
+                [{
+                    text: "OK",
+                    onPress: () => {
+                        setGameOver(true); // End the game
+                        setPlayerPosition({ x: 0, y: 0 }); // Reset player position
+                        navigation.navigate('Home'); // Redirect to Home
+                    }
+                }]
+            );
             setVisibleTraps(prev => [...prev, { x: newX, y: newY }]); // Make trap visible
-            setGameOver(true);
             return;
         }
+
+        await playSound('move');
 
         // Update the player position
         setPlayerPosition({ x: newX, y: newY });
 
-        // Check if the player has reached the goal
-        if (newX === goalPosition.x && newY === goalPosition.y) {
-            await playSound('success'); // Play success sound
-            Alert.alert("You won!"); // Display winning message
-            setWon(true); // Update won state
-            setPlayerPosition(null); // Make the player disappear
-            setTimeout(() => navigation.navigate('Home'), 2000); // Redirect to Home after 2 seconds
-            return; // Stop further movement
-        }
-
         // Check if the player has no valid moves left
         if (checkForNoMoves({ x: newX, y: newY }, traps, maze)) {
-            await playSound('gameOver'); // Play game over sound
             Alert.alert("Game Over! No valid moves left.");
             setGameOver(true);
         }
@@ -116,17 +129,16 @@ const MazeGame = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Maze Game</Text>
-            <Text style={styles.timer}>Time Left: {timer} seconds</Text> {/* Timer Display */}
+            <Text style={styles.timer}>Time Left: {timer} seconds</Text> 
             <View style={styles.maze}>
                 {maze.map((row, rowIndex) => (
                     <View key={rowIndex} style={styles.row}>
                         {row.map((cell, cellIndex) => {
                             let cellStyle = styles.cell;
 
-                            // Render player, goal, walls, traps, and empty space
-                            if (won && playerPosition === null) {
-                                return null; // Don't render the player if won
-                            } else if (playerPosition && playerPosition.x === cellIndex && playerPosition.y === rowIndex) {
+                            if (won && playerPosition.x === -1 && playerPosition.y === -1) {
+                                return null; // Do not render player when they have won
+                            } else if (playerPosition.x === cellIndex && playerPosition.y === rowIndex) {
                                 cellStyle = { ...cellStyle, backgroundColor: 'blue' }; // Player
                             } else if (cellIndex === goalPosition.x && rowIndex === goalPosition.y) {
                                 cellStyle = { ...cellStyle, backgroundColor: 'green' }; // Goal
@@ -138,7 +150,13 @@ const MazeGame = ({ navigation }) => {
                                 cellStyle = { ...cellStyle, backgroundColor: 'white' }; // Empty space
                             }
 
-                            return <View key={cellIndex} style={cellStyle} />;
+                            return (
+                                <View key={cellIndex} style={cellStyle}>
+                                    {playerPosition.x === cellIndex && playerPosition.y === rowIndex && (
+                                        <Text style={styles.playerText}></Text>
+                                    )}
+                                </View>
+                            );
                         })}
                     </View>
                 ))}

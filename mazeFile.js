@@ -48,7 +48,7 @@ export const playSound = async (sound) => {
         move: require('./sounds/move.mp3'),      // Ensure this sound file exists
         trap: require('./sounds/trap.mp3'),      // Ensure this sound file exists
         win: require('./sounds/win.mp3'),        // Ensure this sound file exists
-      };
+    };
 
     if (!soundMap[sound]) {
         console.warn(`Sound ${sound} does not exist!`);
